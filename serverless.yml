@@ -1,0 +1,80 @@
+service: serverless-todos-rest-api
+
+frameworkVersion: '2'
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  lambdaHashingVersion: 20201221
+  stage: dev
+  region: us-west-2
+  iamRoleStatements:
+    - Effect: Allow
+      Action: 
+        - dynamodb:DescribeTable
+        - dynamodb:Query
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+        - dynamodb:Scan
+      Resource: "arn:aws:dynamodb:us-west-2:*:*"
+
+resources:
+  Resources:
+    TodosTable:
+      Type: "AWS::DynamoDB::Table"
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        TableName: 'todos'
+      
+
+functions:
+  create:
+    handler: src/createTodo.createTodo
+    memorySize: 256
+    events:
+      - http:
+          path: todos
+          method: post
+          cors: true
+  getById:
+    handler: src/getTodoById.getTodoById
+    memorySize: 256
+    events:
+      - http:
+          path: todos/{id}
+          method: get
+          cors: true
+  listTodo:
+    handler: src/listTodos.listTodos
+    memorySize: 256
+    events:
+      - http:
+          path: todos
+          method: get
+          cors: true
+  deleteTodo:
+    handler: src/deleteTodo.deleteTodo
+    memorySize: 256
+    events:
+      - http:
+          path: todos/{id}
+          method: delete
+          cors: true
+  updateTodo:
+    handler: src/updateTodo.updateTodo
+    memorySize: 256
+    events:
+      - http:
+          path: todos/{id}
+          method: put
+          cors: true
